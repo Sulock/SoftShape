@@ -11,7 +11,7 @@ import time
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from ts_utils import set_seed, build_loss, save_cls_result, build_dataset, get_all_datasets, evaluate_model
+from ts_utils import set_seed, build_loss, save_cls_result, build_dataset, get_all_datasets, evaluate_model, plot_train_curves
 from data.preprocessing import normalize_per_series, fill_nan_value, normalize_train_val_test
 from data.dataloader import UCRDataset
 from data.shape_size_hyp import ucr_hyp_dict_shape_size
@@ -27,11 +27,11 @@ if __name__ == '__main__':
 
     # Dataset setup
     parser.add_argument('--dataset', type=str, default='CBF', help='dataset(in ucr)')  # ACSF1 GunPoint
-    parser.add_argument('--dataroot', type=str, default='/home/lz/UCRArchive_2018', help='path of UCR folder')
+    parser.add_argument('--dataroot', type=str, default='/home/ubuntu/xhc_ws/CF/SoftShape/data/UCRArchive_2018', help='path of UCR folder')
     parser.add_argument('--num_class', type=int, default=2, help='number of class')
     parser.add_argument('--normalize_way', type=str, default='single', help='single or train_set')
     parser.add_argument('--input_size', type=int, default=1, help='input_size')
-   
+
     # Model setup
     parser.add_argument('--emb_dim', type=int, default=128)
     parser.add_argument('--depth', type=int, default=2)
@@ -52,10 +52,10 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=16, help='')
     parser.add_argument('--use_large_batch', type=int, default=1, help='1 is True, 0 is False') ## Larger batch size can run faster
     parser.add_argument('--epoch', type=int, default=500, help='training epoch')
-    parser.add_argument('--cuda', type=str, default='cuda:3')
+    parser.add_argument('--cuda', type=str, default='cuda:0')
 
     # Result setup
-    parser.add_argument('--save_dir', type=str, default='/home/lz/SoftShape/result')
+    parser.add_argument('--save_dir', type=str, default='/home/ubuntu/xhc_ws/CF/SoftShape/result')
     parser.add_argument('--save_csv_name', type=str, default='softshape_five_fold_split')
 
     args = parser.parse_args()
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         args.shape_size = int(args.seq_len * args.shape_ratio)
         if args.shape_size <= args.shape_stride:
             args.shape_stride = min(2, args.shape_size)
-    
+
     if args.shape_stride > args.shape_size:
         args.shape_stride = args.shape_size
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         args.batch_size = 512
         if train_datasets[0].shape[0] < args.batch_size:
             args.batch_size = train_datasets[0].shape[0]
-        
+
     loss = build_loss(args).to(device)
     model = SoftShapeNet(seq_len=args.seq_len, shape_size=args.shape_size, num_channels=1, emb_dim=args.emb_dim, sparse_rate=args.sparse_rate, 
                          depth=args.depth, num_experts=args.moe_num_experts, num_classes=args.num_class, stride=args.shape_stride)
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         model.load_state_dict(model_init_state)
 
         print('{} fold start training and evaluate'.format(i))
-            
+
         train_target = train_targets[i]
         val_dataset = val_datasets[i]
         val_target = val_targets[i]
@@ -141,11 +141,11 @@ if __name__ == '__main__':
                                                                                 test_dataset)
 
         train_set = UCRDataset(torch.from_numpy(train_dataset).type(torch.FloatTensor).to(device),
-                            torch.from_numpy(train_target).type(torch.FloatTensor).to(device).to(torch.int64))
+                               torch.from_numpy(train_target).type(torch.FloatTensor).to(device).to(torch.int64))
         val_set = UCRDataset(torch.from_numpy(val_dataset).type(torch.FloatTensor).to(device),
-                            torch.from_numpy(val_target).type(torch.FloatTensor).to(device).to(torch.int64))
+                             torch.from_numpy(val_target).type(torch.FloatTensor).to(device).to(torch.int64))
         test_set = UCRDataset(torch.from_numpy(test_dataset).type(torch.FloatTensor).to(device),
-                            torch.from_numpy(test_target).type(torch.FloatTensor).to(device).to(torch.int64))
+                              torch.from_numpy(test_target).type(torch.FloatTensor).to(device).to(torch.int64))
 
         train_loader = DataLoader(train_set, batch_size=args.batch_size, num_workers=0, drop_last=False)
         val_loader = DataLoader(val_set, batch_size=args.batch_size, num_workers=0)
@@ -211,8 +211,8 @@ if __name__ == '__main__':
         
     test_accuracies = torch.Tensor(test_accuracies).cpu().numpy()
 
-    print("Training end. mean_test_acc: {:.4f}, training time {:.4f}".format(np.mean(test_accuracies), train_time))
+    print("Training end. mean_test_acc: {:.4f}, best_test_acc: {:.4f}, training time {:.4f}".format(np.mean(test_accuracies), np.max(test_accuracies), train_time))
 
-    save_cls_result(args, np.mean(test_accuracies), train_time)
+    save_cls_result(args, np.mean(test_accuracies), np.max(test_accuracies), train_time)
 
     print('Done!')

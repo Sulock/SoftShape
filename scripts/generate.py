@@ -42,8 +42,12 @@ for dataset in  ucr_dataset_128:
 
     save_csv_name = 'main_softshape_reuslts'  
 
-    with open('/home/lz/SoftShape/scripts/ucr_cls.sh', 'a') as f:
-        f.write('python main_softshape.py --dataset ' + dataset + ' --save_csv_name ' + save_csv_name + ' --cuda cuda:3' + ';\n')
+    with open('/home/ubuntu/xhc_ws/CF/SoftShape/scripts/ucr_cls.sh', 'a') as f:
+        f.write('python main_softshape.py --dataset ' + dataset + ' --save_csv_name ' + save_csv_name + ' --cuda cuda:0' + ';\n')
 
 
 ## nohup ./scripts/ucr_cls.sh &
+
+# new command
+# nohup bash ./scripts/ucr_cls.sh > ucr_train.log 2>&1 &
+# jobs -l
