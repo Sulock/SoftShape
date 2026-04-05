@@ -211,8 +211,12 @@ if __name__ == '__main__':
         
     test_accuracies = torch.Tensor(test_accuracies).cpu().numpy()
 
-    print("Training end. mean_test_acc: {:.4f}, best_test_acc: {:.4f}, training time {:.4f}".format(np.mean(test_accuracies), np.max(test_accuracies), train_time))
+    # print("Training end. mean_test_acc: {:.4f}, best_test_acc: {:.4f}, training time {:.4f}".format(np.mean(test_accuracies), np.max(test_accuracies), train_time))
 
-    save_cls_result(args, np.mean(test_accuracies), np.max(test_accuracies), train_time)
+    # save_cls_result(args, np.mean(test_accuracies), np.max(test_accuracies), train_time)
+
+    print("Training end. mean_test_acc: {:.4f}, training time {:.4f}".format(np.mean(test_accuracies), train_time))
+
+    save_cls_result(args, np.mean(test_accuracies), train_time)
 
     print('Done!')
