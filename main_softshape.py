@@ -11,7 +11,7 @@ import time
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from ts_utils import set_seed, build_loss, save_cls_result, build_dataset, get_all_datasets, evaluate_model, plot_train_curves
+from ts_utils import set_seed, build_loss, save_cls_result, build_dataset, get_all_datasets, evaluate_model
 from data.preprocessing import normalize_per_series, fill_nan_value, normalize_train_val_test
 from data.dataloader import UCRDataset
 from data.shape_size_hyp import ucr_hyp_dict_shape_size
